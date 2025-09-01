@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Catalog</title>
+    <link rel="stylesheet" href="style2.css">
+</head>
+<body>
+
+    <header class="main-header">
+        <h1>Online Store</h1>
+    </header>
+
+    <div class="container">
+        <aside class="sidebar">
+            <div class="search-bar-mobile">
+                <input type="text" id="searchMobile" placeholder="Search for products...">
+            </div>
+            
+            <h3>Categories</h3>
+            <ul class="categories">
+                <li><a href="#" class="category-filter" data-category="all">All</a></li>
+                <li><a href="#" class="category-filter" data-category="electronics">Electronics</a></li>
+                <li><a href="#" class="category-filter" data-category="clothing">Clothing</a></li>
+                <li><a href="#" class="category-filter" data-category="books">Books</a></li>
+                <li><a href="#" class="category-filter" data-category="home-goods">Home Goods</a></li>
+            </ul>
+
+            <h3>Filters</h3>
+            <div class="filter-group">
+                <h4>Price</h4>
+                <div class="price-range">
+                    <input type="number" id="minPrice" placeholder="Min" min="0">
+                    <span>-</span>
+                    <input type="number" id="maxPrice" placeholder="Max" min="0">
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <h4>Brand</h4>
+                <label><input type="checkbox" class="brand-filter" value="Brand A"> Electronics</label>
+                <label><input type="checkbox" class="brand-filter" value="Brand B"> Cloths</label>
+                <label><input type="checkbox" class="brand-filter" value="Brand C"> Books</label>
+            </div>
+
+            <div class="filter-group">
+                <h4>Availability</h4>
+                <label><input type="checkbox" id="inStockFilter"> In Stock</label>
+            </div>
+        </aside>
+
+        <main class="product-grid" id="productGrid">
+            <div class="search-bar-desktop">
+                <input type="text" id="searchDesktop" placeholder="Search for products...">
+            </div>
+            
+            </main>
+    </div>
+
+<script>
+    // Simulated product data
+    const products = [
+        { 
+            id: 1, 
+            name: "iPhone 15", 
+            description: "The iPhone 15 series was announced on September 12, 2023, with pre-orders starting on September 15, 2023, and the official release date on September 22, 2023. The iPhone 15 and 15 Plus became available alongside the higher-end iPhone 15 Pro and 15 Pro Max.", 
+            price: 59999.99, 
+            image: "https://m.media-amazon.com/images/I/71657TiFeHL.jpg", 
+            stock: "In Stock", 
+            category: "electronics",
+            brand: "Brand A"
+        },
+        { 
+            id: 2, 
+            name: "Samsung S24 Ultra", 
+            description: "Samsung Galaxy S24 Ultra 5G AI Smartphone with Galaxy AI (Titanium Black, 12GB, 256GB Storage), Snapdragon 8 Gen 3, 200 MP Camera with ProVisual Engine and 5000mAh Battery. Beast of a Phone – Samsung Just Nailed It! Picked up the S24 Ultra recently, and honestly... this phone is an absolute beast.", 
+            price: 120000.00, 
+            image: "https://m.media-amazon.com/images/I/717Q2swzhBL.jpg", 
+            stock: "Out of Stock", 
+            category: "electronics",
+            brand: "Brand A"
+        },
+        {
+            id: 3, 
+            name: "Harry Potter and the Sorcerer's Stone", 
+            description: "The first novel in the Harry Potter series and J. K. Rowling's debut novel. It was published in 1997 and introduces Harry Potter, a young wizard who discovers his magical heritage on his eleventh birthday, when he receives a letter of acceptance to Hogwarts School of Witchcraft and Wizardry.", 
+            price: 599.00, 
+            image: "https://m.media-amazon.com/images/I/81q77Q39nEL.jpg", 
+            stock: "In Stock", 
+            category: "books",
+            brand: "Brand C"
+        },
+        {
+            id: 4, 
+            name: "Linen Shirt", 
+            description: "A comfortable and breathable linen shirt perfect for summer weather. Features a classic button-down design with a single pocket on the chest.", 
+            price: 1200.00, 
+            image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRossA7K8ixJSsxiufb0W67Ri8MWvLurj4VLw&s", 
+            stock: "In Stock", 
+            category: "clothing",
+            brand: "Brand B"
+        },
+        {
+            id: 5, 
+            name: "Table Lamp", 
+            description: "A modern and elegant table lamp with an adjustable neck, ideal for reading or as a bedside light. It has a minimalist design to fit any home decor.", 
+            price: 2500.00, 
+            image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRo_9_ZejjVZFxLZtRHpfku48qES3AVbYYK1w&s", 
+            stock: "In Stock", 
+            category: "home-goods",
+            brand: "Brand A"
+        }
+    ];
+
+    const productGrid = document.getElementById('productGrid');
+    const searchDesktop = document.getElementById('searchDesktop');
+    const searchMobile = document.getElementById('searchMobile');
+    const categoryFilters = document.querySelectorAll('.category-filter');
+    const minPriceInput = document.getElementById('minPrice');
+    const maxPriceInput = document.getElementById('maxPrice');
+    const brandFilters = document.querySelectorAll('.brand-filter');
+    const inStockFilter = document.getElementById('inStockFilter');
+
+    // Function to render products
+    const renderProducts = (filteredProducts) => {
+        productGrid.innerHTML = '';
+        if (filteredProducts.length === 0) {
+            productGrid.innerHTML = '<p style="text-align:center; width:100%;">No products found matching your criteria.</p>';
+            return;
+        }
+
+        filteredProducts.forEach(product => {
+            const productCard = document.createElement('div');
+            productCard.className = 'product-card';
+            
+            const stockClass = product.stock === 'Out of Stock' ? 'out-of-stock' : 'in-stock';
+            const buttonsDisabled = product.stock === 'Out of Stock' ? 'disabled' : '';
+
+            productCard.innerHTML = `
+                <img src="${product.image}" alt="${product.name}">
+                <h4 class="product-title">${product.name}</h4>
+                <p class="product-description">${product.description}</p>
+                <p class="product-price">₹${product.price.toLocaleString('en-IN')}</p>
+                <p class="product-stock ${stockClass}">${product.stock}</p>
+                <button class="add-to-cart-btn" type="button" ${buttonsDisabled}>Add to Cart</button>
+                <button class="purchase-btn" type="button" ${buttonsDisabled}>Purchase</button>
+            `;
+            productGrid.appendChild(productCard);
+
+            // Add event listeners to the new buttons
+            const addToCartBtn = productCard.querySelector('.add-to-cart-btn');
+            const purchaseBtn = productCard.querySelector('.purchase-btn');
+
+            if (addToCartBtn) {
+                addToCartBtn.addEventListener('click', () => {
+                    alert(`Added ${product.name} to cart!`);
+                });
+            }
+            if (purchaseBtn) {
+                purchaseBtn.addEventListener('click', () => {
+                    alert(`Purchasing ${product.name}!`);
+                });
+            }
+        });
+    };
+
+    // Function to filter products
+    const filterProducts = () => {
+        const searchTerm = (searchDesktop.value || searchMobile.value).toLowerCase();
+        const minPrice = parseFloat(minPriceInput.value) || 0;
+        const maxPrice = parseFloat(maxPriceInput.value) || Infinity;
+        const selectedBrands = Array.from(brandFilters)
+                                  .filter(checkbox => checkbox.checked)
+                                  .map(checkbox => checkbox.value);
+        const inStockChecked = inStockFilter.checked;
+        const activeCategory = document.querySelector('.category-filter.active')?.dataset.category || 'all';
+
+        const filtered = products.filter(product => {
+            const matchesSearch = product.name.toLowerCase().includes(searchTerm) || 
+                                  product.description.toLowerCase().includes(searchTerm);
+            const matchesPrice = product.price >= minPrice && product.price <= maxPrice;
+            const matchesBrands = selectedBrands.length === 0 || selectedBrands.includes(product.brand);
+            const matchesStock = !inStockChecked || product.stock === 'In Stock';
+            const matchesCategory = activeCategory === 'all' || product.category === activeCategory;
+
+            return matchesSearch && matchesPrice && matchesBrands && matchesStock && matchesCategory;
+        });
+
+        renderProducts(filtered);
+    };
+
+    // Event listeners for filters and search
+    searchDesktop.addEventListener('input', filterProducts);
+    searchMobile.addEventListener('input', filterProducts);
+    minPriceInput.addEventListener('input', filterProducts);
+    maxPriceInput.addEventListener('input', filterProducts);
+    inStockFilter.addEventListener('change', filterProducts);
+
+    brandFilters.forEach(checkbox => {
+        checkbox.addEventListener('change', filterProducts);
+    });
+
+    categoryFilters.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            categoryFilters.forEach(item => item.classList.remove('active'));
+            link.classList.add('active');
+            filterProducts();
+        });
+    });
+
+    // Initial render
+    document.addEventListener('DOMContentLoaded', () => {
+        // Set the 'All' category as active initially
+        document.querySelector('.category-filter[data-category="all"]').classList.add('active');
+        renderProducts(products);
+    });
+</script>
+
+</body>
+</html>
